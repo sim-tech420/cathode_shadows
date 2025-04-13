@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys  # Added to fix NameError
 
 class UI:
     def __init__(self):
@@ -7,6 +8,7 @@ class UI:
         self.width, self.height = 800, 600
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Cathode Shadows")
+        print("UI initialized: Window set to 800x600.")
         # Colors
         self.bg_color = (20, 40, 20)
         self.text_color = (0, 255, 0)
@@ -16,11 +18,14 @@ class UI:
         # Font
         try:
             self.font = pygame.font.Font("fonts/vcr_osd_mono.ttf", 24)
+            print("Font loaded: vcr_osd_mono.ttf")
         except FileNotFoundError:
             self.font = pygame.font.SysFont("courier", 24)
+            print("Font fallback: Using 'courier'.")
         # Sound
         try:
             self.type_sound = pygame.mixer.Sound("sounds/type.wav")
+            print("Sound loaded: type.wav")
         except FileNotFoundError:
             print("Warning: type.wav not found. Typing sound disabled.")
             self.type_sound = None
@@ -37,6 +42,7 @@ class UI:
         surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         for y in range(0, self.height, 2):
             pygame.draw.line(surface, (0, 0, 0, 50), (0, y), (self.width, y))
+        print("CRT surface created.")
         return surface
 
     def create_static_surface(self):
@@ -47,6 +53,7 @@ class UI:
                 gray = random.randint(0, 255)
                 surface.set_at((x, y), (gray, gray, gray))
         surface.set_alpha(100)
+        print("Static surface created.")
         return surface
 
     def wrap_text(self, text, max_width):
@@ -80,16 +87,18 @@ class UI:
         choice_rects = []
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                print("Exiting game...")
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN and not state.is_typing:
                 if event.key == pygame.K_RETURN:
                     if state.input_text:
-                        # Normalize input for matching
                         typed_command = state.input_text.lower().strip()
                         state.input_text = ""
+                        print(f"User pressed Enter with input: '{typed_command}'")
                         state.process_command(typed_command, story)
                     elif state.show_choices and state.selected_choice >= 0:
+                        print(f"User selected menu item {state.selected_choice} via Enter.")
                         state.select_choice(state.selected_choice, story)
                 elif event.key == pygame.K_BACKSPACE:
                     state.input_text = state.input_text[:-1]
@@ -98,10 +107,12 @@ class UI:
                 elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3] and state.show_choices:
                     index = [pygame.K_1, pygame.K_2, pygame.K_3].index(event.key)
                     if index < len(state.choices):
+                        print(f"User pressed key {index+1} for menu item.")
                         state.select_choice(index, story)
             elif event.type == pygame.MOUSEBUTTONDOWN and not state.is_typing and state.show_choices:
                 for i, rect in enumerate(choice_rects):
                     if rect.collidepoint(event.pos):
+                        print(f"User clicked menu item {i}.")
                         state.select_choice(i, story)
         return choice_rects, mouse_pos
 
@@ -117,6 +128,7 @@ class UI:
             else:
                 state.is_typing = False
                 state.show_choices = True
+                print("Typewriter finished. Showing choices.")
 
     def render(self, state, choice_rects, mouse_pos):
         """Render all UI elements."""
@@ -133,21 +145,21 @@ class UI:
             x = 50 + glitch_offset[0]
             y = 50 + i * 30 + glitch_offset[1]
             self.screen.blit(text_surface, (x, y))
-        # Choice menu (moved up to avoid overlap)
+        # Choice menu
         choice_rects.clear()
         if state.show_choices and not state.is_typing:
             for i, choice in enumerate(state.choices):
                 color = self.choice_hover if i == state.selected_choice else self.choice_color
                 choice_surface = self.font.render(f"{i+1}. {choice['text']}", True, color)
-                rect = choice_surface.get_rect(topleft=(50, 350 + i * 30))  # Moved up from 400 to 350
+                rect = choice_surface.get_rect(topleft=(50, 350 + i * 30))
                 self.screen.blit(choice_surface, rect)
                 choice_rects.append(rect)
                 if rect.collidepoint(mouse_pos):
                     state.selected_choice = i
-        # Stats (moved up to avoid overlap)
+        # Stats
         stats_text = f"Psyche: {state.psyche}% | Suspicion: {state.suspicion}% | Skill: {state.skill}%"
         stats_surface = self.font.render(stats_text, True, self.input_color)
-        self.screen.blit(stats_surface, (50, 450))  # Moved up from 470 to 420
+        self.screen.blit(stats_surface, (50, 420))
         # Input field
         input_surface = self.font.render(
             "> " + state.input_text + "_" if not state.is_typing else "> Type command...",

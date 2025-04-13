@@ -4,16 +4,20 @@ from story import Story
 from ui import UI
 
 def main():
+    print("Initializing Pygame...")
     pygame.init()
     pygame.mixer.init()
     # Initialize components
+    print("Creating game state, story, and UI...")
     state = GameState()
     story = Story()
     ui = UI()
     clock = pygame.time.Clock()
     # Load initial scene
+    print(f"Loading initial scene: {state.current_scene}")
     story.load_scene(state, state.current_scene)
     # Main loop
+    print("Starting main loop...")
     while True:
         current_time = pygame.time.get_ticks()
         # Handle input

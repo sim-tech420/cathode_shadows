@@ -31,21 +31,32 @@ class GameState:
         if "psyche" in stat_changes and stat_changes["psyche"] < -4:
             self.static_active = True
             self.static_timer = pygame.time.get_ticks()
+            print(f"Static burst triggered. Psyche: {self.psyche}")
 
     def process_command(self, command, story):
         """Process typed command and update scene."""
         command = command.lower().strip()
+        print(f"Processing command: '{command}'")
+        print(f"Available choices: {[c['command'] for c in self.choices]}")
         for choice in self.choices:
-            if command == choice["command"]:
+            # Match against command or normalized text
+            choice_command = choice["command"].lower().strip()
+            choice_text = choice["text"].lower().strip()
+            if command == choice_command or command == choice_text:
+                print(f"Command '{command}' matched to '{choice_command}' or '{choice_text}'. Updating stats and loading next scene...")
                 self.update_stats(choice.get("stats", {}))
                 self.current_scene = choice["next_scene"]
                 story.load_scene(self, self.current_scene)
                 return
-        # Reload scene with error message
-        story.load_scene(self, self.current_scene, error="Command not recognized. Try again.")
+        # Command not recognized; show valid options in error
+        valid_commands = ", ".join([f"{c['command']} ('{c['text']}')" for c in self.choices])
+        error_message = f"Command not recognized. Try: {valid_commands}" if self.choices else "Command not recognized. No choices available."
+        print(f"Command '{command}' not recognized. Reloading scene with error: {error_message}")
+        story.load_scene(self, self.current_scene, error=error_message)
 
     def select_choice(self, index, story):
         """Process menu choice and update scene."""
+        print(f"Selected choice {index}: {self.choices[index]['text']}")
         self.update_stats(self.choices[index].get("stats", {}))
         self.current_scene = self.choices[index]["next_scene"]
         story.load_scene(self, self.current_scene)

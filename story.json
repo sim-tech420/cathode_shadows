@@ -73,6 +73,61 @@
           "stats": {"psyche": 5}
         }
       ]
+    },
+    "morning": {
+      "text": "You wake up to a new day. The city hums outside.",
+      "choices": [
+        {
+          "text": "Go to work",
+          "command": "work",
+          "next_scene": "office",
+          "stats": {"psyche": 5}
+        }
+      ]
+    },
+    "plan_night": {
+      "text": "You stay up late, sketching plans. Exhaustion creeps in.",
+      "choices": [
+        {
+          "text": "Rest",
+          "command": "rest",
+          "next_scene": "morning",
+          "stats": {"psyche": 5}
+        }
+      ]
+    },
+    "news_report": {
+      "text": "The news mentions a missing person. Your client's name comes up.",
+      "choices": [
+        {
+          "text": "Investigate",
+          "command": "investigate",
+          "next_scene": "office",
+          "stats": {"suspicion": 5}
+        }
+      ]
+    },
+    "office": {
+      "text": "At the law firm, papers pile up. A colleague eyes you suspiciously.",
+      "choices": [
+        {
+          "text": "Work quietly",
+          "command": "work",
+          "next_scene": "home_day",
+          "stats": {"suspicion": -5}
+        }
+      ]
+    },
+    "home_day": {
+      "text": "You stay home, avoiding the world. Memories haunt you.",
+      "choices": [
+        {
+          "text": "Reflect",
+          "command": "reflect",
+          "next_scene": "morning",
+          "stats": {"psyche": -5}
+        }
+      ]
     }
   }
 }
