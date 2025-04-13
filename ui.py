@@ -1,6 +1,6 @@
 import pygame
 import random
-import sys  # Added to fix NameError
+import sys
 
 class UI:
     def __init__(self):
@@ -85,6 +85,15 @@ class UI:
         mouse_pos = pygame.mouse.get_pos()
         state.selected_choice = -1
         choice_rects = []
+
+        # Populate choice rects if choices are visible (for mouse clicks)
+        if state.show_choices and not state.is_typing:
+            for i, choice in enumerate(state.choices):
+                color = self.choice_hover if i == state.selected_choice else self.choice_color
+                choice_surface = self.font.render(f"{i+1}. {choice['text']}", True, color)
+                rect = choice_surface.get_rect(topleft=(50, 350 + i * 30))
+                choice_rects.append((rect, choice_surface))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 print("Exiting game...")
@@ -93,10 +102,19 @@ class UI:
             elif event.type == pygame.KEYDOWN and not state.is_typing:
                 if event.key == pygame.K_RETURN:
                     if state.input_text:
-                        typed_command = state.input_text.lower().strip()
+                        typed_input = state.input_text.lower().strip()
                         state.input_text = ""
-                        print(f"User pressed Enter with input: '{typed_command}'")
-                        state.process_command(typed_command, story)
+                        print(f"User pressed Enter with input: '{typed_input}'")
+                        # Check if input is a number (1, 2, 3) to select a choice
+                        if state.show_choices and typed_input in ["1", "2", "3"]:
+                            index = int(typed_input) - 1
+                            if 0 <= index < len(state.choices):
+                                print(f"User typed '{typed_input}' to select choice: {state.choices[index]['text']}")
+                                state.select_choice(index, story)
+                            else:
+                                print(f"Invalid choice number '{typed_input}'. Choices available: {len(state.choices)}")
+                        else:
+                            state.process_command(typed_input, story)
                     elif state.show_choices and state.selected_choice >= 0:
                         print(f"User selected menu item {state.selected_choice} via Enter.")
                         state.select_choice(state.selected_choice, story)
@@ -107,13 +125,21 @@ class UI:
                 elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3] and state.show_choices:
                     index = [pygame.K_1, pygame.K_2, pygame.K_3].index(event.key)
                     if index < len(state.choices):
-                        print(f"User pressed key {index+1} for menu item.")
+                        print(f"User pressed key {index+1} to select choice: {state.choices[index]['text']}")
                         state.select_choice(index, story)
-            elif event.type == pygame.MOUSEBUTTONDOWN and not state.is_typing and state.show_choices:
-                for i, rect in enumerate(choice_rects):
+            elif event.type == pygame.MOUSEBUTTONDOWN and state.show_choices:
+                for i, (rect, _) in enumerate(choice_rects):
                     if rect.collidepoint(event.pos):
-                        print(f"User clicked menu item {i}.")
+                        print(f"User clicked choice {i+1}: {state.choices[i]['text']}")
                         state.select_choice(i, story)
+
+        # Update hovered choice for visual feedback
+        if state.show_choices:
+            for i, (rect, _) in enumerate(choice_rects):
+                if rect.collidepoint(mouse_pos):
+                    state.selected_choice = i
+                    break
+
         return choice_rects, mouse_pos
 
     def update_typewriter(self, state, current_time):
@@ -145,21 +171,14 @@ class UI:
             x = 50 + glitch_offset[0]
             y = 50 + i * 30 + glitch_offset[1]
             self.screen.blit(text_surface, (x, y))
-        # Choice menu
-        choice_rects.clear()
+        # Choice menu (render the populated choice_rects)
         if state.show_choices and not state.is_typing:
-            for i, choice in enumerate(state.choices):
-                color = self.choice_hover if i == state.selected_choice else self.choice_color
-                choice_surface = self.font.render(f"{i+1}. {choice['text']}", True, color)
-                rect = choice_surface.get_rect(topleft=(50, 350 + i * 30))
-                self.screen.blit(choice_surface, rect)
-                choice_rects.append(rect)
-                if rect.collidepoint(mouse_pos):
-                    state.selected_choice = i
+            for rect, surface in choice_rects:
+                self.screen.blit(surface, rect)
         # Stats
         stats_text = f"Psyche: {state.psyche}% | Suspicion: {state.suspicion}% | Skill: {state.skill}%"
         stats_surface = self.font.render(stats_text, True, self.input_color)
-        self.screen.blit(stats_surface, (50, 420))
+        self.screen.blit(stats_surface, (50, 450))
         # Input field
         input_surface = self.font.render(
             "> " + state.input_text + "_" if not state.is_typing else "> Type command...",
