@@ -1,0 +1,78 @@
+{
+  "scenes": {
+    "apartment_start": {
+      "text": "You're alone in your apartment, 1983. A newspaper clipping about a missing client sits on the table. What do you do?",
+      "choices": [
+        {
+          "text": "Burn",
+          "command": "burn",
+          "next_scene": "apartment_burn",
+          "stats": {"suspicion": -5}
+        },
+        {
+          "text": "Keep",
+          "command": "keep",
+          "next_scene": "apartment_keep",
+          "stats": {"psyche": -5, "skill": 5}
+        },
+        {
+          "text": "Ignore",
+          "command": "ignore",
+          "next_scene": "apartment_ignore",
+          "stats": {"psyche": 5}
+        }
+      ]
+    },
+    "apartment_burn": {
+      "text": "You burn the clipping. Ashes scatter. No evidence remains.",
+      "choices": [
+        {
+          "text": "Go to sleep",
+          "command": "sleep",
+          "next_scene": "morning",
+          "stats": {}
+        },
+        {
+          "text": "Check the news",
+          "command": "news",
+          "next_scene": "news_report",
+          "stats": {"suspicion": 5}
+        }
+      ]
+    },
+    "apartment_keep": {
+      "text": "You hide the clipping in a box. A secret kept.",
+      "choices": [
+        {
+          "text": "Go to sleep",
+          "command": "sleep",
+          "next_scene": "morning",
+          "stats": {}
+        },
+        {
+          "text": "Plan next steps",
+          "command": "plan",
+          "next_scene": "plan_night",
+          "stats": {"skill": 5, "psyche": -5}
+        }
+      ]
+    },
+    "apartment_ignore": {
+      "text": "You toss the clipping aside and try to sleep. Dreams are uneasy.",
+      "choices": [
+        {
+          "text": "Go to work",
+          "command": "work",
+          "next_scene": "office",
+          "stats": {"suspicion": 5}
+        },
+        {
+          "text": "Stay home",
+          "command": "stay",
+          "next_scene": "home_day",
+          "stats": {"psyche": 5}
+        }
+      ]
+    }
+  }
+}
